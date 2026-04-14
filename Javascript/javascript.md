@@ -31,8 +31,9 @@ I’ve developed my JavaScript skills through a mix of structured courses and ha
     1. **Simon Game**
     2. **Calculator**
 
-### 2. JavaScript MCQ + Coding Test:
-
+### 2. JavaScript MCQ + Coding Test + Certifications:
+https://www.udemy.com/certificate/UC-92692350-a950-4d47-a07a-eee22cb4b7fa/
+![alt text](image.png)
 
 ## References Links:
 ** https://github.com/Sarvesh-Shelgaonkar/Placement-Materials **
