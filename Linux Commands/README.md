@@ -15,7 +15,6 @@ This module showcases my learning and assessment progress for Linux commands. Fo
 
 ---
 ### Quiz Results
-
-
+![alt text](image.png)
 
 ---
