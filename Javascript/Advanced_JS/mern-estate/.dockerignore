@@ -1,0 +1,11 @@
+# Dockerignore file
+node_modules
+client/node_modules
+client/dist
+.env
+api/.env
+client/.env
+.git
+mern-estate-backup
+QUICK_FIX.txt
+check-setup.js

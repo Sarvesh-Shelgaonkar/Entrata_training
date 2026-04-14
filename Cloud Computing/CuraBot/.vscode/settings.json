@@ -1,0 +1,5 @@
+{
+    "python.defaultInterpreterPath": "C:\\ProgramData\\anaconda3\\envs\\medibot\\python.exe",
+    "python.terminal.activateEnvInSelectedTerminal": true,
+    "python.condaPath": "C:\\ProgramData\\anaconda3\\Scripts\\conda.exe"
+}
