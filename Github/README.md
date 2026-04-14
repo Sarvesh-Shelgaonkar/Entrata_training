@@ -17,5 +17,4 @@ This module showcases my learning and assessment progress for Git commands. For 
 ### Quiz Results
 ![alt text](image.png)
 
-
 ---
