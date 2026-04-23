@@ -3,7 +3,7 @@
 This repository contains my study materials and practice code for database concepts, ranging from basics to advanced topics like Triggers, Functions, and ODBC integration.
 
 ## 📂 Project Structure
-
+----
 ### 1. [Basics](basics/README.md)
 - **[SQL Basics](basics/SQL_BASICS/README.md)**: Core SQL operations (CRUD), table creation, and constraints.
 - **[SQL Joins](basics/SQL_JOINS/README.md)**: Understanding relationships between tables using INNER, LEFT, and RIGHT joins.
