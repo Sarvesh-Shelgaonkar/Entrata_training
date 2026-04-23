@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>To-Do Pro</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 🔥 NAVBAR -->
+<nav class="navbar">
+  <div class="logo">🚀 To-Do Pro</div>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">Tasks</a></li>
+    <li><a href="#">About</a></li>
+  </ul>
+</nav>
+
+<!-- MAIN APP -->
+<div class="app">
+  <h1>✨ Your Tasks</h1>
+
+  <div class="input-box">
+    <input type="text" id="taskInput" placeholder="What do you want to do today?" />
+    <button onclick="addTask()">+</button>
+  </div>
+
+  <div class="filters">
+    <button onclick="filterTasks('all')" class="active">All</button>
+    <button onclick="filterTasks('active')">Active</button>
+    <button onclick="filterTasks('completed')">Completed</button>
+  </div>
+
+  <ul id="taskList"></ul>
+
+  <div class="footer">
+    <span id="taskCount">0 tasks</span>
+    <button onclick="clearCompleted()">Clear Completed</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

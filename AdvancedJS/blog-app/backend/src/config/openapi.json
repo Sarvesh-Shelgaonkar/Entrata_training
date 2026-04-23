@@ -1,0 +1,474 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Blog App API",
+    "version": "1.0.0",
+    "description": "REST API: authentication, profiles, categories, posts, and upvotes/downvotes. Protected routes use `Authorization: Bearer <token>`."
+  },
+  "servers": [{ "url": "/", "description": "This server" }],
+  "tags": [
+    { "name": "Health", "description": "Liveness" },
+    { "name": "Auth", "description": "Register, login, password reset (OTP)" },
+    { "name": "Profiles", "description": "Author profiles" },
+    { "name": "Categories", "description": "Post categories" },
+    { "name": "Posts", "description": "Posts and voting" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "ok": { "type": "boolean", "example": true } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "409": { "description": "Email already registered" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/auth/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Request password reset OTP (email)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": { "email": { "type": "string", "format": "email" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Generic message (avoid email enumeration)" }
+        }
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Reset password with OTP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "otp", "newPassword"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "otp": { "type": "string" },
+                  "newPassword": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password reset" },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/api/profiles/me": {
+      "get": {
+        "tags": ["Profiles"],
+        "summary": "Get my profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "description": "Profile not found" }
+        }
+      },
+      "put": {
+        "tags": ["Profiles"],
+        "summary": "Update my profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bio": { "type": "string" },
+                  "avatarUrl": { "type": "string" },
+                  "headline": { "type": "string" },
+                  "website": { "type": "string" },
+                  "location": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "description": "Profile not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Profiles"],
+        "summary": "Delete my profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "204": { "description": "Deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "description": "Profile not found" }
+        }
+      }
+    },
+    "/api/profiles": {
+      "post": {
+        "tags": ["Profiles"],
+        "summary": "Create profile (if none exists)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bio": { "type": "string" },
+                  "avatarUrl": { "type": "string" },
+                  "headline": { "type": "string" },
+                  "website": { "type": "string" },
+                  "location": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "409": { "description": "Profile already exists" }
+        }
+      }
+    },
+    "/api/profiles/{userId}": {
+      "get": {
+        "tags": ["Profiles"],
+        "summary": "Get profile by user id (public)",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "pattern": "^[a-fA-F0-9]{24}$" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "description": "Invalid user id" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "List categories",
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      },
+      "post": {
+        "tags": ["Categories"],
+        "summary": "Create category",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": { "name": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "409": { "description": "Duplicate name" }
+        }
+      }
+    },
+    "/api/posts": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "List posts",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "schema": { "type": "string", "description": "Category ObjectId" }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["latest", "popular"], "default": "latest" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20, "maximum": 100 }
+          },
+          { "name": "skip", "in": "query", "schema": { "type": "integer", "default": 0 } }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      },
+      "post": {
+        "tags": ["Posts"],
+        "summary": "Create post",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "content", "category"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "content": { "type": "string" },
+                  "category": { "type": "string", "description": "Category ObjectId" },
+                  "imageUrl": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/posts/{id}": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "Get post by id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "description": "Invalid id" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "put": {
+        "tags": ["Posts"],
+        "summary": "Update post (author only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "content": { "type": "string" },
+                  "category": { "type": "string" },
+                  "imageUrl": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "description": "Not author" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Posts"],
+        "summary": "Delete post (author only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "description": "Not author" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/posts/{id}/upvote": {
+      "post": {
+        "tags": ["Posts"],
+        "summary": "Upvote (toggle)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "description": "Post not found" }
+        }
+      }
+    },
+    "/api/posts/{id}/downvote": {
+      "post": {
+        "tags": ["Posts"],
+        "summary": "Downvote (toggle)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "description": "Post not found" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Paste the token from login/register response: `Authorization: Bearer <token>`"
+      }
+    },
+    "schemas": {
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "user": { "type": "object" },
+          "token": { "type": "string" }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": { "message": { "type": "string" } }
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing or invalid JWT",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": { "message": { "type": "string" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}

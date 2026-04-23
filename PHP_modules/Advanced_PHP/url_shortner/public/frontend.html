@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinkSnap — Modern URL Management</title>
+  <meta name="description" content="LinkSnap is a lightning-fast, minimal URL shortener. Paste a long URL and get a clean short link instantly." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0f172a;
+      --surface:     #1e293b;
+      --surface2:    #334155;
+      --border:      rgba(255,255,255,0.1);
+      --border-glow: rgba(56,189,248,0.4);
+      --accent:      #38bdf8;
+      --accent2:     #0ea5e9;
+      --accent-glow: rgba(56,189,248,0.25);
+      --pink:        #f472b6;
+      --cyan:        #22d3ee;
+      --green:       #4ade80;
+      --red:         #f87171;
+      --text:        #f8fafc;
+      --muted:       #94a3b8;
+      --radius:      16px;
+      --radius-sm:   10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.1;
+      animation: drift 18s ease-in-out infinite;
+    }
+    .blob-1 { width: 600px; height: 600px; background: var(--accent);  top: -200px; left: -150px; }
+    .blob-2 { width: 500px; height: 500px; background: var(--pink);    bottom: -150px; right: -150px; }
+
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%       { transform: translate(30px, -20px) scale(1.05); }
+      66%       { transform: translate(-20px, 30px) scale(0.95); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    header {
+      text-align: center;
+      padding: 80px 0 50px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .logo-text {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    header h1 {
+      font-size: clamp(2.2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 16px;
+    }
+    header h1 span {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 450px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .url-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 2px solid transparent;
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 16px 20px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .url-input:focus {
+      border-color: var(--accent);
+      background: #1e293b;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      padding: 16px 28px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-primary:hover {
+      background: #fff;
+      transform: translateY(-2px);
+    }
+
+    .result-box {
+      margin-top: 24px;
+      display: none;
+      background: rgba(56,189,248,0.05);
+      border: 1px dashed var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+    }
+    .result-box.show { display: block; }
+
+    .url-list { margin-top: 50px; }
+    .url-item {
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--border);
+    }
+
+    .click-badge {
+      background: var(--surface2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: var(--cyan);
+    }
+
+    footer { text-align: center; margin-top: 60px; color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-gradient">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">⚡</div>
+        <span class="logo-text">LinkSnap</span>
+      </div>
+      <h1>Shorten Links<br><span>with a Snap</span></h1>
+      <p>Clean, fast, and simple URL management for the modern web.</p>
+    </header>
+
+    <div class="card">
+      <form id="snap-form">
+        <div class="form-row">
+          <input id="url-input" class="url-input" type="url" placeholder="Paste your long link here..." required />
+          <button class="btn btn-primary" type="submit">Snap It!</button>
+        </div>
+      </form>
+
+      <div id="result-box" class="result-box">
+        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 5px;">YOUR SNAPPED LINK:</p>
+        <a id="result-link" href="#" target="_blank" style="color: var(--accent); font-weight: 700; text-decoration: none; font-size: 1.2rem;"></a>
+      </div>
+    </div>
+
+    <div class="url-list" id="snap-list">
+      <!-- List will be populated here -->
+    </div>
+
+    <footer>
+      LinkSnap &copy; 2026 · Built with PHP
+    </footer>
+  </div>
+
+  <script>
+    const snapForm = document.getElementById('snap-form');
+    const snapList = document.getElementById('snap-list');
+
+    snapForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = document.getElementById('url-input').value;
+      
+      const res = await fetch('/api/shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      
+      const data = await res.json();
+      if(data.status === 'success') {
+        const box = document.getElementById('result-box');
+        const link = document.getElementById('result-link');
+        link.href = data.data.snap_link;
+        link.textContent = data.data.snap_link;
+        box.classList.add('show');
+        loadSnaps();
+      }
+    });
+
+    async function loadSnaps() {
+      const res = await fetch('/api/urls');
+      const data = await res.json();
+      
+      if(data.status === 'success') {
+        snapList.innerHTML = '<h3>Recent Snaps</h3>';
+        data.data.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'url-item';
+          div.innerHTML = `
+            <div>
+              <div style="font-size: 0.8rem; color: var(--muted);">${item.target_url.substring(0, 50)}...</div>
+              <a href="${item.snap_link}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">${item.snap_link}</a>
+            </div>
+            <div class="click-badge">${item.visit_count} visits</div>
+          `;
+          snapList.appendChild(div);
+        });
+      }
+    }
+
+    loadSnaps();
+  </script>
+</body>
+</html>
